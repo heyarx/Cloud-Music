@@ -1,4 +1,5 @@
 import os
+import asyncio
 import yt_dlp
 from fastapi import FastAPI, Request
 from telegram import Update
@@ -8,7 +9,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, Con
 # ------------------------
 # Configuration
 # ------------------------
-BOT_TOKEN = os.environ.get("BOT_TOKEN")  # Telegram bot token from Render environment
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
 DOWNLOAD_DIR = "downloads"
 
 # Ensure downloads folder exists
@@ -28,10 +29,8 @@ async def search_song(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Please type a song name to search!")
         return
 
-    # Send searching message
-    msg = await update.message.reply_text(f"🔎 Searching for '{query}'...")
-
-    # Show typing/uploading status
+    # Show searching message
+    await update.message.reply_text(f"🔎 Searching for '{query}'...")
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_AUDIO)
 
     ydl_opts = {
@@ -54,15 +53,14 @@ async def search_song(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # Send audio
             await update.message.reply_audio(audio=open(filename, 'rb'), title=info['title'])
 
-            # Delete the file after sending
+            # Delete after sending
             if os.path.exists(filename):
                 os.remove(filename)
-
     except Exception:
         await update.message.reply_text("❌ Sorry, could not find or download the song.")
 
 # ------------------------
-# Set Up Telegram Application
+# FastAPI App and Telegram Application
 # ------------------------
 app = FastAPI()
 application = ApplicationBuilder().token(BOT_TOKEN).build()
@@ -82,15 +80,28 @@ async def telegram_webhook(req: Request):
     return {"ok": True}
 
 # ------------------------
-# Optional Root Route to Avoid 404
+# Optional Root Route
 # ------------------------
 @app.get("/")
 async def home():
     return {"message": "Cloud Music Bot is running!"}
 
 # ------------------------
-# Optional: Run Uvicorn locally (for testing)
+# Start the Telegram Application properly
+# ------------------------
+async def start_bot():
+    await application.initialize()
+    await application.start()
+    print("Telegram bot started and running...")
+
+# Run both FastAPI and Telegram bot
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(start_bot())
+
+# ------------------------
+# Optional: Run locally with uvicorn
 # ------------------------
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("bot:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("bot:app", host="0.0.0.0", port=int(os.environ.get("PORT", 8000)), reload=True)
