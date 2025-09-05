@@ -10,6 +10,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, Con
 BOT_TOKEN = os.environ.get("BOT_TOKEN")  # Telegram bot token from Render environment
 DOWNLOAD_DIR = "downloads"
 
+# Ensure downloads folder exists
 if not os.path.exists(DOWNLOAD_DIR):
     os.makedirs(DOWNLOAD_DIR)
 
@@ -56,7 +57,7 @@ async def search_song(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if os.path.exists(filename):
                 os.remove(filename)
 
-    except Exception as e:
+    except Exception:
         await update.message.reply_text("❌ Sorry, could not find or download the song.")
 
 # ------------------------
@@ -80,7 +81,7 @@ async def telegram_webhook(req: Request):
     return {"ok": True}
 
 # ------------------------
-# Run Uvicorn locally (optional, for testing)
+# Optional: Run Uvicorn locally (for testing)
 # ------------------------
 if __name__ == "__main__":
     import uvicorn

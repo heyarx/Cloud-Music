@@ -1,0 +1,37 @@
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+.env
+.venv/
+
+# Temporary downloads folder
+downloads/
+
+# Logs
+*.log
+
+# Byte-compiled directories
+*.egg-info/
+.eggs/
+
+# PyInstaller / build artifacts
+build/
+dist/
+
+# IDE / Editor configs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Render / deployment files (optional if local only)
+*.env
