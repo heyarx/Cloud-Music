@@ -82,6 +82,13 @@ async def telegram_webhook(req: Request):
     return {"ok": True}
 
 # ------------------------
+# Optional Root Route to Avoid 404
+# ------------------------
+@app.get("/")
+async def home():
+    return {"message": "Cloud Music Bot is running!"}
+
+# ------------------------
 # Optional: Run Uvicorn locally (for testing)
 # ------------------------
 if __name__ == "__main__":
