@@ -7,8 +7,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, Con
 # ------------------------
 # Configuration
 # ------------------------
-BOT_TOKEN = os.environ.get("BOT_TOKEN")  # Set this in Render environment
-APP_URL = os.environ.get("APP_URL")      # Your Render URL, e.g., https://cloudsong-arx.onrender.com
+BOT_TOKEN = os.environ.get("BOT_TOKEN")  # Telegram bot token from Render environment
 DOWNLOAD_DIR = "downloads"
 
 if not os.path.exists(DOWNLOAD_DIR):
@@ -27,8 +26,9 @@ async def search_song(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Please type a song name to search!")
         return
 
+    # Send searching message
     msg = await update.message.reply_text(f"🔎 Searching for '{query}'...")
-    
+
     # Show typing/uploading status
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_AUDIO)
 
@@ -48,17 +48,19 @@ async def search_song(update: Update, context: ContextTypes.DEFAULT_TYPE):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(f"ytsearch1:{query}", download=True)['entries'][0]
             filename = ydl.prepare_filename(info).replace(".webm", ".mp3").replace(".m4a", ".mp3")
-            
+
             # Send audio
             await update.message.reply_audio(audio=open(filename, 'rb'), title=info['title'])
-            
-            # Delete file after sending
-            os.remove(filename)
+
+            # Delete the file after sending
+            if os.path.exists(filename):
+                os.remove(filename)
+
     except Exception as e:
         await update.message.reply_text("❌ Sorry, could not find or download the song.")
 
 # ------------------------
-# Set Up Application
+# Set Up Telegram Application
 # ------------------------
 app = FastAPI()
 application = ApplicationBuilder().token(BOT_TOKEN).build()
@@ -78,16 +80,7 @@ async def telegram_webhook(req: Request):
     return {"ok": True}
 
 # ------------------------
-# Set Webhook on Startup
-# ------------------------
-@app.on_event("startup")
-async def set_webhook():
-    webhook_url = f"{APP_URL}/webhook"
-    await application.bot.set_webhook(url=webhook_url)
-    print(f"Webhook set to: {webhook_url}")
-
-# ------------------------
-# Run Uvicorn locally (for testing)
+# Run Uvicorn locally (optional, for testing)
 # ------------------------
 if __name__ == "__main__":
     import uvicorn

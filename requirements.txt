@@ -1,5 +1,5 @@
-python-telegram-bot==20.5
-yt-dlp>=2025.8.1
-fastapi>=0.109.2
-uvicorn>=0.26.1
-requests>=2.31.0
+python-telegram-bot==20.5   # Telegram bot API
+yt-dlp>=2025.8.1            # Download music from YouTube
+fastapi>=0.109.2            # For webhook server
+uvicorn>=0.26.1             # Run FastAPI
+requests>=2.31.0            # Optional, for web requests
